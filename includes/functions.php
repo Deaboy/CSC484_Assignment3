@@ -80,6 +80,8 @@ function resultToTable($result)
 
 function generateHomePage()
 {
+  global $rootURL;
+  
   // Content string
   $content = "";
   
@@ -95,6 +97,8 @@ function generateHomePage()
 
 function generateLoansPage()
 {
+  global $rootURL;
+  
   // Content string
   $content = "";
   $patron = 0;
@@ -194,6 +198,8 @@ function generateLoansPage()
 
 function generatePatronsPage()
 {
+  global $rootURL;
+  
   // Content string
   $content = "";
   
@@ -204,6 +210,8 @@ function generatePatronsPage()
 
 function generateBooksPage()
 {
+  global $rootURL;
+  
   // Content string
   $content = "";
   
