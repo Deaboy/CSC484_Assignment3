@@ -28,6 +28,15 @@ function databaseConnect()
 
 
 
+// Because our school's computers are missing some pretty important stuff
+require_once "extra_functions.php";
+
+
+
+/**
+ * Takes the results of a database query and formats the rows
+ * to appear in a neat, orderly fashion in a table.
+ */
 function resultToTable($result)
 {
   $content = "";
@@ -36,7 +45,7 @@ function resultToTable($result)
   ob_start();
 ?>
 
-<?php if ($row = $result -> fetch_array(MYSQLI_ASSOC)) { ?>
+<?php if ($row = iimysqli_result_fetch_array($result)) { ?>
 
 <table class="results">
   <tbody>
@@ -51,7 +60,7 @@ function resultToTable($result)
       <td><?php echo $val; ?></td>
 <?php } ?>
     </tr>
-<?php } while ($row = $result -> fetch_array(MYSQLI_ASSOC)); ?>
+<?php } while ($row = iimysqli_result_fetch_array($result)); ?>
   </tbody>
 </table>
 
@@ -100,7 +109,7 @@ function generateLoansPage()
   // Execute select query
   $query = $mysqli -> prepare("SELECT * FROM Patron ORDER BY patronName");
   $query -> execute();
-  $result = $query -> get_result();
+  $result = iimysqli_stmt_get_result($query);
   
   // If a patron is defined, fetch loans from database
   if (isset($_POST["patron"]))
@@ -119,7 +128,7 @@ function generateLoansPage()
 <form action="<?php echo $rootURL; ?>?p=loans" method="post">
   <select name="patron">
     <option value="0"<?php echo ($patron == 0 ? " selected" : ""); ?>></option>
-<?php while ($row = $result -> fetch_array()) { ?>
+<?php while ($row = iimysqli_result_fetch_array($result)) { ?>
     <option value="<?php echo $row['patronNo']; ?>"<?php echo ($patron == $row['patronNo'] ? " selected" : ""); ?>><?php echo $row['patronName']; ?></option>
 <?php } ?>
   </select>
@@ -156,7 +165,7 @@ function generateLoansPage()
         Book.bookNo ASC");
     $query -> bind_param('i', $patron);
     $query -> execute();
-    $result = $query -> get_result();
+    $result = iimysqli_stmt_get_result($query);
     
     // Add results to content
     $content .= resultToTable($result);
