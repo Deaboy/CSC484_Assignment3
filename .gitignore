@@ -1,3 +1,5 @@
 # Gedit temporary files
 *~
 
+# DB Connection Info for privacy reasons
+includes/dbConnectionInfo.php
