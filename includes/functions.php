@@ -218,6 +218,45 @@ function generatePatronsPage()
   // Content string
   $content = "";
   
+  //try to connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    return "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
+  }
+
+  // Begin Query to display table of Patrons
+  $query = $pdo -> prepare(
+    "SELECT
+      Patron.patronName as Name,
+      Patron.patronNo as ID,
+      Patron.patronType as Type
+    FROM Patron
+    ORDER BY
+      Patron.patronName ASC");
+  $query -> execute();
+  $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+  $result = $query -> fetchAll();
+
+  // Add results to content
+  $content .= resultToTable($result);
+
+  ob_start();
+?>
+
+//change button to link to correct page
+<form method="post" action="<?php echo $rootURL; ?>?p=loans">
+<input type="submit" value="Add New Patron">
+</form>
+
+<?php
+  $content .= ob_get_clean();
+  
+  // Clean up
+  $pdo = NULL;
   return $content;
 }
 
