@@ -90,7 +90,7 @@ INSERT INTO CopyBook ( libNo, bookNo, cost ) VALUES
 	( 3, 10, 693 ),
 	( 3, 10, 693 ); #45 books
 
-
+# Loans
 TRUNCATE Loan;
 INSERT INTO Loan( copyNo, patronNo, checkOutDate, dueDate ) VALUES
 	( 34, 7, '1900-01-01', '1900-01-05' ),
@@ -100,8 +100,3 @@ INSERT INTO Loan( copyNo, patronNo, checkOutDate, dueDate ) VALUES
 	( 13, 1, '2014-11-20', '2014-11-24' ),
 	( 12, 3, '2014-11-24', '2014-11-29' ),
 	( 19, 2, '2014-12-07', '2014-12-12' );
-
-
-	
-# DATES: yyyy-mm-dd, eg. '2014-12-07'
-

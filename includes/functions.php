@@ -33,9 +33,10 @@ function generateHomePage()
   // Content string
   $content = "";
   
-  ob_start();
-  var_dump(databaseConnect());
-  $content .= ob_get_clean();
+  // Uses 3rd party class Parsedown to parse the project README file
+  require_once "Parsedown.php";
+  $Parsedown = new Parsedown();
+  $content .= $Parsedown->text(file_get_contents("README.md"));
   
   return $content;
 }

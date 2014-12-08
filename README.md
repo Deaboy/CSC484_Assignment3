@@ -1,4 +1,4 @@
-# CSC484_Assignment3
+# CSC484 Assignment3
 ## Authors
 Johnathan Ackerman, Daniel Andrus, Andrew Koc
 
