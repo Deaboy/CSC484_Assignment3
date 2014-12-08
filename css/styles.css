@@ -1,0 +1,50 @@
+/**
+ * CSS Tempalte Styles
+ *
+ * Please observe the following guidelines:
+ *  - Use 2 spaces for indentation (not tabs)
+ *  - Meaningful indentifiers with consistent capitalization
+ */
+
+body {
+	margin: 0;
+	padding: 0;
+	background-color: #AAAAAA;
+	
+	font-family: Helvetica, Arial, sans-serif;
+}
+
+.page {
+	display: block;
+	margin: 0 auto;
+	padding: 0;
+	max-width: 800px;
+	
+	background-color: #FFFFFF;
+	box-shadow: 0px 0px 8px 4px rgba(0, 0, 0, 0.3);
+}
+
+header, article, footer {
+	display: block;
+}
+
+.header {
+	margin: 0;
+	padding: 8px;
+	padding-bottom: 0;
+	
+	border-bottom: 1px solid #BBBBBB;
+}
+
+.content {
+}
+
+.footer {
+	margin: 0;
+	padding: 2px;
+	min-height: 1em;
+	
+	background-color: #DDDDDD;
+	border-top: 1px solid #BBBBBB;
+}
+
