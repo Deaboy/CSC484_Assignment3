@@ -17,7 +17,8 @@
 $pageTitle = "CSC 484 - Assignment 3";
 
 // Main header for the page
-$pageHeader = "<h1>Hello, World!</h1>";
+$pageHeader = "<h1>CSC 484 - Assignment 3</h1>
+<h2>Johnathan Ackerman, Daniel Andrus, &amp; Andrew Koc</h2>";
 
 // Main content for the page
 $pageContent = "<p>How are you doing today?</p>";
