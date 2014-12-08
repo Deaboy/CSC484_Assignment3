@@ -1,13 +1,20 @@
 # Sample data for database
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE Loan;
+TRUNCATE CopyBook;
+TRUNCATE Book;
+TRUNCATE Patron;
+TRUNCATE Author;
+TRUNCATE Library;
+SET FOREIGN_KEY_CHECKS = 1;
+
 # Libraries
-TRUNCATE TABLE Library;
 INSERT INTO Library (libName, location, noRooms) VALUES
 	('Devorakk Library', '123 Alabama Road, Alabama', 7),
 	('Arzerack Library', '423 Central Ave, New York', 5),
 	('Zimmerrock Halls', '821452 Mountain CT, Wyoming', 22);
 
 # Book Authors
-TRUNCATE Author;
 INSERT INTO Author ( authorName ) VALUES
 	('Albert Boinks'),
 	('Justin Cerval'),
@@ -17,7 +24,6 @@ INSERT INTO Author ( authorName ) VALUES
 	('Tori, Nixoner');
 
 # Library patrons
-TRUNCATE Patron;
 INSERT INTO Patron ( patronName, patronType ) VALUES
 	('Gage Geigle', 3),
 	('Marcus Berger', 4),
@@ -28,7 +34,6 @@ INSERT INTO Patron ( patronName, patronType ) VALUES
 	('Ronald Berks', 2);
 
 # Book
-TRUNCATE Book;
 INSERT INTO Book ( title, noPages, authorno ) VALUES
 	('My First Book', 3, 6 ),
 	('Tale of Two Suns', 4031, 2),
@@ -42,7 +47,6 @@ INSERT INTO Book ( title, noPages, authorno ) VALUES
 	('Vector Notation', 532, 4);
 
 # Copy of Books
-TRUNCATE CopyBook;
 INSERT INTO CopyBook ( libNo, bookNo, cost ) VALUES
 	( 1, 1, 4 ),
 	( 2, 1, 4 ),
@@ -91,7 +95,6 @@ INSERT INTO CopyBook ( libNo, bookNo, cost ) VALUES
 	( 3, 10, 693 ); #45 books
 
 # Loans
-TRUNCATE Loan;
 INSERT INTO Loan( copyNo, patronNo, checkOutDate, dueDate ) VALUES
 	( 34, 7, '1900-01-01', '1900-01-05' ),
 	( 21, 4, '2014-11-01', '2014-11-05' ),

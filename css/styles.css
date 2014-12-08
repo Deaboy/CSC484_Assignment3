@@ -36,6 +36,7 @@ header, article, footer {
 
 .content {
   padding: 8px;
+  min-height: 20em;
 }
 
 .footer {
@@ -119,6 +120,60 @@ header, article, footer {
 
 .content p {
   margin-top: 0;
+}
+
+
+
+/******* Database results styles *******/
+table.results {
+  margin: 2em auto;
+  width: 96%;
+  
+  color: #222;
+  
+  border: none;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+table.results th {
+  padding: 8px;
+  margin: 0;
+  
+  font-size: 0.9em;
+  
+  background-color: #586;
+}
+
+table.results td {
+  border: none;
+  padding: 6px;
+  margin: 0;
+  
+  font-weight: normal;
+  font-size: 0.75em;
+  
+  border-right: 1px solid white;
+}
+
+table.results tr:nth-of-type(even) td {
+  background-color: #DEFBE9;
+}
+table.results tr:nth-of-type(odd) td {
+  background-color: #D6F2E0;
+}
+
+.no-results {
+  display: block;
+  width: 90%;
+  padding: 3%;
+  margin: 2em auto;
+  
+  text-align: center;
+  font-size: 1em;
+  
+  background-color: #DEFBE9;
+  border: 2px dashed #586;
 }
 
 

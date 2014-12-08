@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS Author (
 
 # Library patrons
 CREATE TABLE IF NOT EXISTS Patron (
-	patronNO BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	patronNo BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	patronName VARCHAR(128) NOT NULL DEFAULT "",
 	patronType INT NOT NULL DEFAULT 0
 );
@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS CopyBook (
 		ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+
+
 # Patrons loaning copies of books from libraries
 CREATE TABLE IF NOT EXISTS Loan (
 	loanNo BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -65,6 +67,8 @@ CREATE TABLE IF NOT EXISTS Loan (
 	patronNo BIGINT NOT NULL,
 	checkOutDate DATE NOT NULL,
 	dueDate DATE NOT NULL,
+  
+    CHECK (dueDate > checkOutDate),
 
 	CONSTRAINT fk_loan_copybook
 		FOREIGN KEY (copyNo)

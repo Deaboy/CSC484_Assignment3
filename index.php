@@ -11,7 +11,7 @@
  * database.
  */
 
-$rootURL = basename($_SERVER['PHP_SELF']);
+$rootURL = dirname($_SERVER['PHP_SELF']);
 
 require_once "includes/functions.php";
 
