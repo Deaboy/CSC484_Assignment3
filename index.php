@@ -37,10 +37,10 @@ $pageFooter = "";
 
 // Navigation for the page
 $pageNavigation = "<ul class=\"nav\">
-	<li><a href=\"$rootURL\">Home</a></li>
-	<li><a href=\"$rootURL?p=loans\">Loans</a></li>
-	<li><a href=\"$rootURL?p=patrons\">Patrons</a></li>
-	<li><a href=\"$rootURL?p=books\">Books</a></li>
+  <li><a href=\"$rootURL\">Home</a></li>
+  <li><a href=\"$rootURL?p=loans\">Loans</a></li>
+  <li><a href=\"$rootURL?p=patrons\">Patrons</a></li>
+  <li><a href=\"$rootURL?p=books\">Books</a></li>
 </ul>";
 
 // Based on the url, determine which page to display

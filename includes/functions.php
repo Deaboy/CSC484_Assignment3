@@ -32,6 +32,22 @@ function databaseConnect()
 
 
 /**
+ * Given a string and number of inspaces to indent it, will insert given
+ * number of spaces after every new line and at the beginning of the string and
+ * will return the result.
+ */
+function indent($subject, $spaces)
+{
+  $replace = "";
+  for ($i = 0; $i < $spaces; $i++)
+    $replace .= " ";
+  
+  return str_replace("\n", "\n$replace", $subject);
+}
+
+
+
+/**
  * Takes the results of a database query and formats the rows
  * to appear in a neat, orderly fashion in a table.
  */
