@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Connects to database using mysqli and returns the connection object.
- * (Must be closed afterwards!) Returns NULL if something goes wrong.
+ * Connects to database using PDO and returns the connection object.
+ * Returns NULL if something goes wrong.
  */
 function databaseConnect()
 {
@@ -18,18 +18,16 @@ function databaseConnect()
    */
   include "dbConnectionInfo.php";
   
-  $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
-  
-  if (mysqli_connect_errno())
+  try
+  {
+    $pdo = new PDO("mysql:dbname=$dbName;host=$dbHost", $dbUser, $dbPass);
+    return $pdo;
+  }
+  catch (PDOException $e)
+  {
     return NULL;
-  else
-    return $mysqli;
+  }
 }
-
-
-
-// Because our school's computers are missing some pretty important stuff
-require_once "extra_functions.php";
 
 
 
@@ -45,22 +43,22 @@ function resultToTable($result)
   ob_start();
 ?>
 
-<?php if ($row = iimysqli_result_fetch_array($result)) { ?>
+<?php if (count($result) > 0) { ?>
 
 <table class="results">
   <tbody>
     <tr>
-<?php foreach ($row as $key => $val) { ?>
+      <?php foreach ($result[0] as $key => $val) { ?>
       <th><?php echo $key; ?></th>
-<?php } ?>
+      <?php } ?>
     </tr>
-<?php do { ?>
+    <?php foreach ($result as $row) { ?>
     <tr>
-<?php foreach ($row as $val) { ?>
+      <?php foreach ($row as $val) { ?>
       <td><?php echo $val; ?></td>
-<?php } ?>
+      <?php } ?>
     </tr>
-<?php } while ($row = iimysqli_result_fetch_array($result)); ?>
+    <?php } ?>
   </tbody>
 </table>
 
@@ -104,16 +102,20 @@ function generateLoansPage()
   $patron = 0;
   
   // Attempt to connect to database
-  $mysqli = databaseConnect();
-  if ($mysqli == NULL)
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
   {
-    return "<h1>Database error</h1><p>Failed to connect to database.</p>";
+    return "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
   }
   
   // Execute select query
-  $query = $mysqli -> prepare("SELECT * FROM Patron ORDER BY patronName");
+  $query = $pdo -> prepare("SELECT * FROM Patron ORDER BY patronName");
   $query -> execute();
-  $result = iimysqli_stmt_get_result($query);
+  $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+  $result = $query -> fetchAll();
   
   // If a patron is defined, fetch loans from database
   if (isset($_POST["patron"]))
@@ -132,7 +134,7 @@ function generateLoansPage()
 <form action="<?php echo $rootURL; ?>?p=loans" method="post">
   <select name="patron">
     <option value="0"<?php echo ($patron == 0 ? " selected" : ""); ?>></option>
-<?php while ($row = iimysqli_result_fetch_array($result)) { ?>
+<?php foreach ($result as $row) { ?>
     <option value="<?php echo $row['patronNo']; ?>"<?php echo ($patron == $row['patronNo'] ? " selected" : ""); ?>><?php echo $row['patronName']; ?></option>
 <?php } ?>
   </select>
@@ -141,14 +143,13 @@ function generateLoansPage()
 
 <?php
   $content .= ob_get_clean();
-  $result -> free();
   
   // If patron was selected, display table of results
   
   if ($patron > 0)
   {
     // Prepare query and execute query
-    $query = $mysqli -> prepare(
+    $query = $pdo -> prepare(
       "SELECT
         Book.bookNo AS Book,
         CopyBook.copyNo AS Copy,
@@ -164,18 +165,16 @@ function generateLoansPage()
       LEFT JOIN
         Author ON (Author.authorNo = Book.authorNo)
       WHERE
-        Loan.patronNo = ?
+        Loan.patronNo = :patronNo
       ORDER BY
         Book.bookNo ASC");
-    $query -> bind_param('i', $patron);
+    $query -> bindParam(':patronNo', $patron, PDO::PARAM_INT);
     $query -> execute();
-    $result = iimysqli_stmt_get_result($query);
+    $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+    $result = $query -> fetchAll();
     
     // Add results to content
     $content .= resultToTable($result);
-    
-    // Clean up after ourselves!
-    $result -> free();
   }
   else
   {
@@ -190,7 +189,7 @@ function generateLoansPage()
   }
   
   // Clean up after ourselves!
-  $mysqli -> close();
+  $pdo = NULL;
   return $content;
 }
 

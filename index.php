@@ -11,8 +11,15 @@
  * database.
  */
 
+// Enable error reporting if not already enabled
+ini_set('display_startup_errors', 1); 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+// Get base URL
 $rootURL = dirname($_SERVER['PHP_SELF']) . "/";
 
+// Include functions file
 require_once "includes/functions.php";
 
 // Title for the page
