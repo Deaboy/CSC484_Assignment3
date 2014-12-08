@@ -64,17 +64,17 @@ function resultToTable($result)
 <table class="results">
   <tbody>
     <tr>
-      <?php foreach ($result[0] as $key => $val) { ?>
+<?php foreach ($result[0] as $key => $val) { ?>
       <th><?php echo $key; ?></th>
-      <?php } ?>
+<?php } ?>
     </tr>
-    <?php foreach ($result as $row) { ?>
+<?php foreach ($result as $row) { ?>
     <tr>
-      <?php foreach ($row as $val) { ?>
+<?php foreach ($row as $val) { ?>
       <td><?php echo $val; ?></td>
-      <?php } ?>
+<?php } ?>
     </tr>
-    <?php } ?>
+<?php } ?>
   </tbody>
 </table>
 
