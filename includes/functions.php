@@ -33,7 +33,7 @@ function generateHomePage()
   // Content string
   $content = "";
   
-  $ob_start();
+  ob_start();
   var_dump(databaseConnect());
   $content .= ob_get_clean();
   
