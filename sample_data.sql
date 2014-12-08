@@ -1,10 +1,10 @@
 # Sample data for database
 # Libraries
-TRUNCATE TABLE Libraries;
-INSERT INTO Libraries (libName, location, noRooms) VALUES
+TRUNCATE TABLE Library;
+INSERT INTO Library (libName, location, noRooms) VALUES
 	('Devorakk Library', '123 Alabama Road, Alabama', 7),
 	('Arzerack Library', '423 Central Ave, New York', 5),
-	('Zimmerrock Halls', '821452 Mountain CT, Wyoming, 22');
+	('Zimmerrock Halls', '821452 Mountain CT, Wyoming', 22);
 
 # Book Authors
 TRUNCATE Author;
@@ -19,7 +19,7 @@ INSERT INTO Author ( authorName ) VALUES
 # Library patrons
 TRUNCATE Patron;
 INSERT INTO Patron ( patronName, patronType ) VALUES
-	('Gage Gaigal', 3),
+	('Gage Geigle', 3),
 	('Marcus Berger', 4),
 	('Joe Box', 1),
 	('Zack David', 0),
@@ -33,7 +33,7 @@ INSERT INTO Book ( title, noPages, authorno ) VALUES
 	('My First Book', 3, 6 ),
 	('Tale of Two Suns', 4031, 2),
 	('Mark of a Stone Tooth', 321, 2),
-	('Mysticallities of the Soul', 555, 5)
+	('Mysticallities of the Soul', 555, 5),
 	('My Face When', 25, 6 ),
 	('How to Read', 732, 4 ),
 	('How to Remember', 473, 4),
@@ -43,7 +43,7 @@ INSERT INTO Book ( title, noPages, authorno ) VALUES
 
 # Copy of Books
 TRUNCATE CopyBook;
-INSERT INTO copyBook ( libNo, bookNo, cost ) VALUES
+INSERT INTO CopyBook ( libNo, bookNo, cost ) VALUES
 	( 1, 1, 4 ),
 	( 2, 1, 4 ),
 	( 3, 1, 4 ),
@@ -77,29 +77,29 @@ INSERT INTO copyBook ( libNo, bookNo, cost ) VALUES
 	( 3, 9, 25 ),
 	( 3, 9, 25 ),
 	( 1, 10, 693 ),
-        ( 1, 10, 693 ),
-        ( 1, 10, 693 ),
-        ( 1, 10, 693 ),
-        ( 2, 10, 693 ),
-        ( 2, 10, 693 ),
-        ( 2, 10, 693 ),
-        ( 3, 10, 693 ),
-        ( 3, 10, 693 ),
-        ( 3, 10, 693 ),
-        ( 3, 10, 693 ),
-        ( 3, 10, 693 ),
-        ( 3, 10, 693 ); #45 books
+	( 1, 10, 693 ),
+	( 1, 10, 693 ),
+	( 1, 10, 693 ),
+	( 2, 10, 693 ),
+	( 2, 10, 693 ),
+	( 2, 10, 693 ),
+	( 3, 10, 693 ),
+	( 3, 10, 693 ),
+	( 3, 10, 693 ),
+	( 3, 10, 693 ),
+	( 3, 10, 693 ),
+	( 3, 10, 693 ); #45 books
 
 
 TRUNCATE Loan;
 INSERT INTO Loan( copyNo, patronNo, checkOutDate, dueDate ) VALUES
-	( 34, 7, 1900-01-01, 1900-01-05 ),
-	( 21, 4, 2014-11-01, 2014-11-05 ),
-	( 1, 1, 2014-11-02, 2014-11-06 ),
-	( 5, 1, 2014-11-20, 2014-11-24 ),
-	( 13, 1, 2014-11-20, 2014-11-24 ),
-	( 12, 3, 2014-11-24, 2014-11-29 ),
-	( 19, 2, 2014-12-07, 2014-12-12 );
+	( 34, 7, '1900-01-01', '1900-01-05' ),
+	( 21, 4, '2014-11-01', '2014-11-05' ),
+	( 1, 1, '2014-11-02', '2014-11-06' ),
+	( 5, 1, '2014-11-20', '2014-11-24' ),
+	( 13, 1, '2014-11-20', '2014-11-24' ),
+	( 12, 3, '2014-11-24', '2014-11-29' ),
+	( 19, 2, '2014-12-07', '2014-12-12' );
 
 
 	

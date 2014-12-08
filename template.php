@@ -32,6 +32,9 @@
 			
 				<!-- Page header here -->
 				<?php echo $pageHeader; ?>
+				
+				<!-- Main navigation here -->
+				<?php echo $pageNavigation; ?>
 			
 			</header>
 			<div class="content-wrapper">
@@ -46,6 +49,9 @@
 			
 				<!-- Page footer here -->
 				<?php echo $pageFooter; ?>
+				
+				<!-- Footer navigation here -->
+				<?php echo $pageNavigation; ?>
 			
 			</footer>
 		</div>

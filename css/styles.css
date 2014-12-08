@@ -37,6 +37,7 @@ header, article, footer {
 }
 
 .content {
+	padding: 8px;
 }
 
 .footer {
