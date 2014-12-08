@@ -7,45 +7,112 @@
  */
 
 body {
-	margin: 0;
-	padding: 0;
-	background-color: #AAAAAA;
-	
-	font-family: Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #BBBBBB;
+
+  font-family: Helvetica, Arial, sans-serif;
 }
 
 .page {
-	display: block;
-	margin: 0 auto;
-	padding: 0;
-	max-width: 800px;
-	
-	background-color: #FFFFFF;
-	box-shadow: 0px 0px 8px 4px rgba(0, 0, 0, 0.3);
+  display: block;
+  margin: 8px auto;
+  padding: 0;
+  max-width: 900px;
+
+  background-color: #FFFFFF;
+  box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.3);
 }
 
 header, article, footer {
-	display: block;
+  display: block;
 }
 
 .header {
-	margin: 0;
-	padding: 8px;
-	padding-bottom: 0;
-	
-	border-bottom: 1px solid #BBBBBB;
+  margin: 0;
+  padding: 8px;
+  padding-bottom: 0;
 }
 
 .content {
-	padding: 8px;
+  padding: 8px;
 }
 
 .footer {
-	margin: 0;
-	padding: 2px;
-	min-height: 1em;
-	
-	background-color: #DDDDDD;
-	border-top: 1px solid #BBBBBB;
+  margin: 0;
+  padding: 2px;
+  min-height: 1em;
+
+  background-color: #DDDDDD;
+  border-top: 1px solid #999999;
+
+  font-size: 0.8em;
+}
+
+/******* Header nav styles *******/
+.header .nav {
+  display: block;
+  margin: 0 -8px;
+  padding: 0;
+  
+  background-color: #117711;
+  border: 1px solid black;
+  border-width: 1px 0;
+  
+  overflow: hidden;
+}
+
+.header .nav > li {
+  display: block;
+  float: left;
+  margin: 0;
+  padding: 8px 16px;
+  
+  color: #FFFFFF;
+  text-decoration: none;
+  border-right: 1px solid black;
+}
+
+.header .nav > li > a {
+  display: block;
+  margin: -8px -16px;
+  padding: 8px 16px;
+  
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.header .nav > li > a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/******* Footer nav styles *******/
+.footer .nav {
+  display: block;
+  margin: 0;
+  padding: 0 0 0 0.25em;
+  
+  text-align: left;
+}
+
+.footer .nav > li {
+  display: inline;
+}
+
+.footer .nav > li:after {
+  content: " |";
+  margin: 0 4px;
+}
+.footer .nav > li:last-of-type:after {
+  content: "";
+}
+
+.footer .nav > li > a {
+  color: #000000;
+  text-decoration: none;
+}
+
+.footer .nav > li > a:hover {
+  text-decoration: underline;
 }
 
