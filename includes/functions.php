@@ -243,12 +243,15 @@ function generatePatronsPage()
 
   // Add results to content
   $content .= resultToTable($result);
-
+  
+  // Add button to create new patron
   ob_start();
 ?>
-<form method="post" action="<?php echo $rootURL; ?>?p=addpatron">
-<input type="submit" value="Add New Patron">
-</form>
+
+
+<a href="<?php echo $rootURL; ?>?p=addpatron">
+  <button>+ Add New Patron</button>
+</a>
 
 <?php
   $content .= ob_get_clean();
@@ -280,16 +283,15 @@ function generateAddPatronPage()
   {
     //build query
     $PatronName = $_POST["Patrontxt"];
-    $PatronType = $_POST["Typetxt"];
+    $PatronType = (int) $_POST["Typetxt"];
     if ($PatronName == "")
     {
       //Display Error
-
-        ob_start();
+      ob_start();
 ?>
-<p>New Patron was not added. Please enter a name.</p>
+<div class="no-results">New patron was not added. Please enter a name.</div>
 <?php
-        $content .= ob_get_clean();
+      $content .= ob_get_clean();
     }
     else
     {
@@ -307,18 +309,16 @@ function generateAddPatronPage()
         //if it was not display error
         ob_start();
 ?>
-<p>New Patron was not added.</p>
+<div class="no-results">New patron was not added!</div>
 <?php
         $content .= ob_get_clean();
-        
-
       }
       else
       {
         //if it was display confirmation
         ob_start();
 ?>
-<p>New Patron was added.</p>
+<div class="no-results">New patron &quot;<?php echo $PatronName; ?>&quot; was added.</div>
 <?php
         $content .= ob_get_clean();
       }
@@ -331,15 +331,17 @@ function generateAddPatronPage()
   ob_start();
 ?>
 <form action="<?php echo $rootURL; ?>?p=addpatron" method="post">
-  <label for="name">Patron Name</label>
-  <input type="text" name="Patrontxt">
-  <label for="type">Patron Type</label>
-  <input type="text" name="Typetxt">
-  <input type="submit" value="Submit">
-</from>
+  <label for="Patrontxt">Patron Name</label>
+  <input type="text" name="Patrontxt" placeholder="Name" />
+  <label for="Typetxt">Patron Type</label>
+  <input type="text" name="Typetxt" placeholder="Type" value="0" />
+  <input type="submit" value="Submit" />
+</form>
 <?php
   $content .= ob_get_clean();
 
+  // Clean up and go home!
+  $pdo = NULL;
   return $content;
 }
 
