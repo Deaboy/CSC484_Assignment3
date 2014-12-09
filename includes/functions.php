@@ -456,10 +456,12 @@ function generateNewLoanPage()
   $pdo = databaseConnect();
   if ($pdo == NULL)
   {
-    return "<div class=\"warning\">
+    $content .= "<div class=\"warning\">
   <h1>Database error</h1>
   <p>Failed to connect to database.</p>
 </div>";
+    
+    return $content;
   }
   
   // Handle submissions
@@ -471,8 +473,8 @@ function generateNewLoanPage()
       || !isset($_POST['checkoutDate'])
       || !isset($_POST['dueDate']))
     {
-      content .= "<div class=\"warning\">
-  <h1>Form Submission Failed</h2>
+      $content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h1>
   <p>Something was weird about your submission. Please try again.</p>
 </h1>";
     }
@@ -486,21 +488,97 @@ function generateNewLoanPage()
 
       $query = $pdo -> prepare(
       "SELECT
-        (SELECT COUNT(*) FROM Loan WHERE patronNo = :patron) AS loanCount");
-      $query -> bindParam(':patron', $patron, PDO::PARAM_INT);
+        (SELECT COUNT(*) FROM Loan WHERE patronNo = :patronNo) AS patronLoans,
+        (SELECT EXISTS(SELECT NULL FROM Loan WHERE copyNo = :copyNo)) AS loaned,
+        (SELECT EXISTS(SELECT NULL FROM CopyBook WHERE copyNo = :copyNo)) AS copyExists,
+        (SELECT EXISTS(SELECT NULL FROM Patron WHERE patronNo = :patronNo)) AS patronExists");
+      $query -> bindParam(':patronNo', $patron, PDO::PARAM_INT);
+      $query -> bindParam(':copyNo', $bookcopy, PDO::PARAM_INT);
       $query -> execute();
       $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
       $result = $query -> fetchAll();
       
-      // Handle cases where 
+      $fail = false;
       
-      // Handle cases where patron has too many books checked out already
-      if ($result[0]['c'] >= 3)
+      // Make sure patron exists
+      if (!$fail && $result[0]['patronExists'] == 0)
       {
-      content .= "<div class=\"warning\">
+        $fail = true;
+        $content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h2>
+  <p>That book copy doesn't exist. What're you trying to pull?</p>
+</h1>";
+      }
+      
+      // Make sure book exists
+      if (!$fail && $result[0]['copyExists'] == 0)
+      {
+        $fail = true;
+        $content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h2>
+  <p>That book copy doesn't exist. What're you trying to pull?</p>
+</h1>";
+      }
+      
+      // Lastly, make sure the book isn't already loaned
+      if (!$fail && $result[0]['loaned'] == 1)
+      {
+        $fail = true;
+        $content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h2>
+  <p>It appears that this book has already been loaned out.</p>
+</h1>";
+      }
+      
+      // Make sure patron doesn't have 3 books checked out already
+      if (!$fail && $result[0]['patronLoans'] >= 3)
+      {
+        $fail = true;
+        $content .= "<div class=\"warning\">
   <h1>Form Submission Failed</h2>
   <p>That patron already has at least 3 books checked out.</p>
 </h1>";
+      }
+      
+      // Attempt to insert the entry
+      if (!$fail)
+      {
+        $query = $pdo -> prepare(
+        "INSERT INTO Loan
+          (copyNo, patronNo, checkoutDate, dueDate)
+        VALUES
+          (:copyNo, :patronNo, :checkoutDate, :dueDate)");
+        
+        // Bind params and execute query
+        $query -> bindParam(':copyNo', $bookcopy, PDO::PARAM_INT);
+        $query -> bindParam(':patronNo', $patron, PDO::PARAM_INT);
+        $query -> bindParam(':checkoutDate', $checkoutDate, PDO::PARAM_STR);
+        $query -> bindParam(':dueDate', $dueDate, PDO::PARAM_STR);
+        $result = $query -> execute();
+        
+        // Check if it worked
+        if (!$result)
+        {
+          $content .= "<div class=\"warning\">
+  <h1>Insertion failed!</h2>
+  <p>Something went wrong. Please try again.</p>
+</h1>";
+        }
+        else
+        {
+          ob_start();
+?>
+<div class="no-results">New loan created!</div>
+<a href="<?php echo $rootURL; ?>?p=books">
+  <button>Return to Books</button>
+</a>
+<?php
+          $content .= ob_get_clean();
+          
+          // Return home!
+          $pdo = NULL;
+          return $content;
+        }
       }
     }
   }
@@ -512,10 +590,14 @@ function generateNewLoanPage()
   }
   else
   {
-    return "<div class=\"warning\">
+    $content .= "<div class=\"warning\">
   <h1>No book copy selected</h1>
   <p>Please select a book copy from the <a href=\"$rootURL?p=books\">Books page</a>.</p>
 </div>";
+    
+    // Clean up and return
+    $pdo = NULL;
+    return $content;
   }
   
   // Execute select query
@@ -525,6 +607,7 @@ function generateNewLoanPage()
     CopyBook.copyNo AS Copy,
     Book.title AS Title,
     Author.authorName AS Author,
+    Book.noPages AS Pages,
     Library.libName AS Library
   FROM CopyBook
   LEFT JOIN
@@ -566,9 +649,9 @@ function generateNewLoanPage()
 <form action="<?php echo $rootURL; ?>?p=newloan&copy=<?php echo $bookcopy; ?>" method="post">
   <label>Patron
     <select name="patron">
-      <option value="0"<?php echo ($patron == 0 ? " selected" : ""); ?>></option>
+      <option value="0" disabled selected>Select Patron</option>
 <?php foreach ($result as $row) { ?>
-      <option value="<?php echo $row['patronNo']; ?>"<?php echo ($patron == $row['patronNo'] ? " selected" : ""); ?>><?php echo $row['patronName']; ?></option>
+      <option value="<?php echo $row['patronNo']; ?>"><?php echo $row['patronName']; ?></option>
 <?php } ?>
     </select>
   </label>
@@ -579,7 +662,7 @@ function generateNewLoanPage()
     <input type="text" name="dueDate" placeholder="YYYY-MM-DD" />
   </label>
   <input type="hidden" name="bookcopy" value="<?php echo $bookcopy; ?>" />
-  <button type="submit" value="submit">Submit</button>
+  <input type="submit" value="Submit" />
 </form>
 
 <?php
