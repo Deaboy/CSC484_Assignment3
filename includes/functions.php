@@ -229,7 +229,89 @@ function generateBooksPage()
   
   // Content string
   $content = "";
+  $search = 0;
   
+  // Attempt to connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    return "<div class=\"warning\">
+    <h1>Database error</h1>
+    <p>Failed to connect to database.</p>
+    </div>";
+  }
+  
+  // If a search is defined, fetch Books from database
+  if (isset($_POST["search"]))
+  {
+    $search = $_POST["search"];
+  }
+  else
+  {
+    $search = 0;
+  }
+
+  // Build Book search form
+  ob_start();
+?>
+
+<form action="<?php echo $rootURL; ?>?p=books" method="post">
+  <input type="text" name="search"<?php echo ($search ? "" : " value=$search"); ?> placeholder="Book Title" />
+  <button type="submit" value="submit">Search</button>
+</form>
+
+<?php
+  $content .= ob_get_clean();
+
+  if ( $search != "" )
+  {
+    // Execute select query
+    $query = $pdo -> prepare(
+      "SELECT
+        Book.bookNo AS Book,
+        CopyBook.copyNo AS Copy,
+        Book.title AS Title,
+        Author.authorName AS Author,
+        Library.libName AS Library,
+        (CASE WHEN
+            EXISTS (
+            SELECT NULL FROM Loan 
+            WHERE Loan.copyNo = CopyBook.copyNo)
+          THEN 'No' ELSE 'Yes') AS Available
+      FROM CopyBook
+      LEFT JOIN
+        Book ON (Book.bookNo = CopyBook.bookNo)
+      LEFT JOIN
+        Author ON (Book.authorNo = Author.authorNo)
+      LEFT JOIN
+        Library ON (CopyBook.libNo = Library.libNo)
+      WHERE
+        Book.title LIKE '%' || :search || '%'
+      ORDER BY
+        Author.authorName ASC,
+        Book.title ASC,
+        Library.libName ASC");
+    $query -> bindParam(":search", $search, PDO::PARAM_STR);
+    $query -> execute();
+    $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+    $result = $query -> fetchAll(); 
+    // Add results to content
+    $content .= resultToTable($result);
+  }
+  else
+  {
+    // If no query was made, just display prompt
+    ob_start();
+?>
+<div class="no-results">
+  Enter in a Book's Title to Start
+</div>
+<?php
+    $content .= ob_get_clean();
+  }
+  
+  // Clean up after ourselves!
+  $pdo = NULL;
   return $content;
 }
 
