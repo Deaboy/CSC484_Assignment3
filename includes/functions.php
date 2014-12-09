@@ -182,6 +182,8 @@ function generateLoansPage()
         CopyBook.copyNo AS Copy,
         Book.title AS Title,
         Author.authorName AS Author,
+		Book.noPages AS Pages,
+		Library.libName AS Library,
         Loan.checkOutDate AS Checkout,
         Loan.dueDate AS Due
       FROM Loan
@@ -191,6 +193,8 @@ function generateLoansPage()
         Book ON (Book.bookNo = CopyBook.bookNo)
       LEFT JOIN
         Author ON (Author.authorNo = Book.authorNo)
+      LEFT JOIN
+        Library ON (Library.libNo = CopyBook.libNo)
       WHERE
         Loan.patronNo = :patronNo
       ORDER BY
