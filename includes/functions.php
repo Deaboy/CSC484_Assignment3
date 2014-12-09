@@ -345,13 +345,96 @@ function generateAddPatronPage()
   return $content;
 }
 
+
+
 function generateBooksPage()
 {
   global $rootURL;
   
   // Content string
   $content = "";
+  $search = "";
+  
+  // Attempt to connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    return "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
+  }
+  
+  // If a search is defined, fetch Books from database
+  if (isset($_POST["search"]))
+  {
+    $search = $_POST["search"];
+  }
+  else
+  {
+    $search = "";
+  }
 
+  // Build Book search form
+  ob_start();
+?>
+
+<form action="<?php echo $rootURL; ?>?p=books" method="post">
+  <input type="text" name="search" value="<?php echo $search; ?>" placeholder="Book Title" />
+  <button type="submit" value="submit">Search</button>
+</form>
+
+<?php
+  $content .= ob_get_clean();
+
+  if ( $search != "" )
+  {
+    // Execute select query
+    $query = $pdo -> prepare(
+      "SELECT
+        Book.bookNo AS Book,
+        CopyBook.copyNo AS Copy,
+        Book.title AS Title,
+        Author.authorName AS Author,
+        Library.libName AS Library,
+        (CASE WHEN
+            EXISTS (SELECT NULL FROM Loan 
+            WHERE Loan.copyNo = CopyBook.copyNo)
+          THEN 'No' ELSE 'Yes' END) AS Available
+      FROM Book
+      INNER JOIN
+        CopyBook ON (CopyBook.bookNo = Book.bookNo)
+      LEFT JOIN
+        Author ON (Author.authorNo  =  Book.authorNo)
+      LEFT JOIN
+        Library ON (Library.libNo  =  CopyBook.libNo)
+      WHERE
+        Book.title LIKE CONCAT('%', :search, '%')
+      ORDER BY
+        Author.authorName ASC,
+        Book.title ASC,
+        Library.libName ASC");
+    $query -> bindParam(":search", $search, PDO::PARAM_STR);
+    $query -> execute();
+    $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+    $result = $query -> fetchAll(); 
+    // Add results to content
+    $content .= resultToTable($result);
+  }
+  else
+  {
+    // If no query was made, just display prompt
+    ob_start();
+?>
+<div class="no-results">
+  Search by book title in the text box above.
+</div>
+<?php
+    $content .= ob_get_clean();
+  }
+  
+  // Clean up after ourselves!
+  $pdo = NULL;
   return $content;
 }
 
