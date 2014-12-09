@@ -246,9 +246,7 @@ function generatePatronsPage()
 
   ob_start();
 ?>
-
-//change button to link to correct page
-<form method="post" action="<?php echo $rootURL; ?>?p=loans">
+<form method="post" action="<?php echo $rootURL; ?>?p=addpatron">
 <input type="submit" value="Add New Patron">
 </form>
 
@@ -260,7 +258,90 @@ function generatePatronsPage()
   return $content;
 }
 
+function generateAddPatronPage()
+{
+  global $rootURL;
+  
+  // Content string
+  $content = "";
 
+  // connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    return "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
+  }
+
+  //Test to see if user submitted a Patron
+  if (isset($_POST["Patrontxt"]) and isset($_POST["Typetxt"]))
+  {
+    //build query
+    $PatronName = $_POST["Patrontxt"];
+    $PatronType = $_POST["Typetxt"];
+    if ($PatronName == "")
+    {
+      //Display Error
+
+        ob_start();
+?>
+<p>New Patron was not added. Please enter a name.</p>
+<?php
+        $content .= ob_get_clean();
+    }
+    else
+    {
+      //build Insert command
+      $query = $pdo -> prepare(
+        "INSERT INTO Patron ( patronName, patronType ) VALUES
+          (:patronName, :patronType)");
+      $query -> bindParam(':patronName', $PatronName, PDO::PARAM_STR, 128);
+      $query -> bindParam(':patronType', $PatronType, PDO::PARAM_INT);
+      $result = $query -> execute();
+
+      //check if command successful
+      if (!$result)
+      {
+        //if it was not display error
+        ob_start();
+?>
+<p>New Patron was not added.</p>
+<?php
+        $content .= ob_get_clean();
+        
+
+      }
+      else
+      {
+        //if it was display confirmation
+        ob_start();
+?>
+<p>New Patron was added.</p>
+<?php
+        $content .= ob_get_clean();
+      }
+      
+    }
+  }
+  
+  
+  //build form with two labels, two textboxes, and a submit button
+  ob_start();
+?>
+<form action="<?php echo $rootURL; ?>?p=addpatron" method="post">
+  <label for="name">Patron Name</label>
+  <input type="text" name="Patrontxt">
+  <label for="type">Patron Type</label>
+  <input type="text" name="Typetxt">
+  <input type="submit" value="Submit">
+</from>
+<?php
+  $content .= ob_get_clean();
+
+  return $content;
+}
 
 function generateBooksPage()
 {
@@ -268,7 +349,7 @@ function generateBooksPage()
   
   // Content string
   $content = "";
-  
+
   return $content;
 }
 

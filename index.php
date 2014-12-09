@@ -62,6 +62,9 @@ case "patrons":
 case "books":
   $pageContent = generateBooksPage();
   break;
+case "addpatron":
+  $pageContent = generateAddPatronPage();
+  break;
 }
 
 // Display everything formatted nicely in the template
