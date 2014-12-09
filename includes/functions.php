@@ -218,10 +218,132 @@ function generatePatronsPage()
   // Content string
   $content = "";
   
+  //try to connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    return "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
+  }
+
+  // Begin Query to display table of Patrons
+  $query = $pdo -> prepare(
+    "SELECT
+      Patron.patronName as Name,
+      Patron.patronNo as ID,
+      Patron.patronType as Type
+    FROM Patron
+    ORDER BY
+      Patron.patronName ASC");
+  $query -> execute();
+  $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+  $result = $query -> fetchAll();
+
+  // Add results to content
+  $content .= resultToTable($result);
+  
+  // Add button to create new patron
+  ob_start();
+?>
+
+
+<a href="<?php echo $rootURL; ?>?p=addpatron">
+  <button>+ Add New Patron</button>
+</a>
+
+<?php
+  $content .= ob_get_clean();
+  
+  // Clean up
+  $pdo = NULL;
   return $content;
 }
 
+function generateAddPatronPage()
+{
+  global $rootURL;
+  
+  // Content string
+  $content = "";
 
+  // connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    return "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
+  }
+
+  //Test to see if user submitted a Patron
+  if (isset($_POST["Patrontxt"]) and isset($_POST["Typetxt"]))
+  {
+    //build query
+    $PatronName = $_POST["Patrontxt"];
+    $PatronType = (int) $_POST["Typetxt"];
+    if ($PatronName == "")
+    {
+      //Display Error
+      ob_start();
+?>
+<div class="no-results">New patron was not added. Please enter a name.</div>
+<?php
+      $content .= ob_get_clean();
+    }
+    else
+    {
+      //build Insert command
+      $query = $pdo -> prepare(
+        "INSERT INTO Patron ( patronName, patronType ) VALUES
+          (:patronName, :patronType)");
+      $query -> bindParam(':patronName', $PatronName, PDO::PARAM_STR, 128);
+      $query -> bindParam(':patronType', $PatronType, PDO::PARAM_INT);
+      $result = $query -> execute();
+
+      //check if command successful
+      if (!$result)
+      {
+        //if it was not display error
+        ob_start();
+?>
+<div class="no-results">New patron was not added!</div>
+<?php
+        $content .= ob_get_clean();
+      }
+      else
+      {
+        //if it was display confirmation
+        ob_start();
+?>
+<div class="no-results">New patron &quot;<?php echo $PatronName; ?>&quot; was added.</div>
+<?php
+        $content .= ob_get_clean();
+      }
+      
+    }
+  }
+  
+  
+  //build form with two labels, two textboxes, and a submit button
+  ob_start();
+?>
+<form action="<?php echo $rootURL; ?>?p=addpatron" method="post">
+  <label for="Patrontxt">Patron Name</label>
+  <input type="text" name="Patrontxt" placeholder="Name" />
+  <label for="Typetxt">Patron Type</label>
+  <input type="text" name="Typetxt" placeholder="Type" value="0" />
+  <input type="submit" value="Submit" />
+</form>
+<?php
+  $content .= ob_get_clean();
+
+  // Clean up and go home!
+  $pdo = NULL;
+  return $content;
+}
 
 function generateBooksPage()
 {
@@ -229,7 +351,7 @@ function generateBooksPage()
   
   // Content string
   $content = "";
-  
+
   return $content;
 }
 
