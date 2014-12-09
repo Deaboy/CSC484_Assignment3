@@ -233,4 +233,154 @@ function generateBooksPage()
   return $content;
 }
 
+function generateNewLoanPage()
+{
+  global $rootURL;
+  
+  // Content string
+  $content = "";
+  global $rootURL;
+  
+  // Content string
+  $content = "";
+  $bookcopy = 0;
+  
+  // Attempt to connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    return "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
+  }
+  
+  // Handle submissions
+  if (isset($_POST['bookcopy']))
+  {
+    // First, make sure everything's there
+    if (!isset($_POST['bookcopy'])
+      || !isset($_POST['patron'])
+      || !isset($_POST['checkoutDate'])
+      || !isset($_POST['dueDate']))
+    {
+      content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h2>
+  <p>Something was weird about your submission. Please try again.</p>
+</h1>";
+    }
+    else
+    {
+      // Import form values
+      $bookcopy = (int) $_POST['bookcopy'];
+      $patron = (int) $_POST['patron'];
+      $checkoutDate = $_POST['checkoutDate'];
+      $dueDate = $_POST['dueDate'];
+
+      $query = $pdo -> prepare(
+      "SELECT
+        (SELECT COUNT(*) FROM Loan WHERE patronNo = :patron) AS loanCount");
+      $query -> bindParam(':patron', $patron, PDO::PARAM_INT);
+      $query -> execute();
+      $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+      $result = $query -> fetchAll();
+      
+      // Handle cases where 
+      
+      // Handle cases where patron has too many books checked out already
+      if ($result[0]['c'] >= 3)
+      {
+      content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h2>
+  <p>That patron already has at least 3 books checked out.</p>
+</h1>";
+      }
+    }
+  }
+  
+  // Get the copy of the book we're lending out
+  if (isset($_GET['copy']))
+  {
+    $bookcopy = (int) $_GET['copy'];
+  }
+  else
+  {
+    return "<div class=\"warning\">
+  <h1>No book copy selected</h1>
+  <p>Please select a book copy from the <a href=\"$rootURL?p=books\">Books page</a>.</p>
+</div>";
+  }
+  
+  // Execute select query
+  $query = $pdo -> prepare(
+  "SELECT
+    Book.bookNo AS Book,
+    CopyBook.copyNo AS Copy,
+    Book.title AS Title,
+    Author.authorName AS Author,
+    Library.libName AS Library
+  FROM CopyBook
+  LEFT JOIN
+    Book ON (Book.bookNo = CopyBook.bookNo)
+  LEFT JOIN
+    Author ON (Author.authorNo = Book.authorNo)
+  LEFT JOIN
+    Library ON (Library.libNo = CopyBook.libNo)
+  WHERE
+    CopyBook.copyNo = :bookcopy");
+  $query -> bindParam(':bookcopy', $bookcopy, PDO::PARAM_INT);
+  $query -> execute();
+  $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+  $result = $query -> fetchAll();
+  
+  ob_start();
+?>
+
+<h1>New Loan</h1>
+<h2>Book to be loaned</h2>
+
+<?php
+  $content .= ob_get_clean();
+  
+  $content .= resultToTable($result);
+  
+  // Get patrons from database too
+  $query = $pdo -> prepare("SELECT * FROM Patron ORDER BY patronName");
+  $query -> execute();
+  $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+  $result = $query -> fetchAll();
+  
+  // Build loan information form
+  ob_start();
+?>
+
+<h2>Loan Information</h2>
+
+<form action="<?php echo $rootURL; ?>?p=newloan&copy=<?php echo $bookcopy; ?>" method="post">
+  <label>Patron
+    <select name="patron">
+      <option value="0"<?php echo ($patron == 0 ? " selected" : ""); ?>></option>
+<?php foreach ($result as $row) { ?>
+      <option value="<?php echo $row['patronNo']; ?>"<?php echo ($patron == $row['patronNo'] ? " selected" : ""); ?>><?php echo $row['patronName']; ?></option>
+<?php } ?>
+    </select>
+  </label>
+  <label>Checkout Date
+    <input type="text" name="checkoutDate" placeholder="YYYY-MM-DD" />
+  </label>
+  <label>Due Date
+    <input type="text" name="dueDate" placeholder="YYYY-MM-DD" />
+  </label>
+  <input type="hidden" name="bookcopy" value="<?php echo $bookcopy; ?>" />
+  <button type="submit" value="submit">Submit</button>
+</form>
+
+<?php
+  $content .= ob_get_clean();
+  
+  // Clean up and go home
+  $dbo = NULL;
+  return $content;
+}
+
 ?>

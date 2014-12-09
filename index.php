@@ -47,6 +47,7 @@ $pageNavigation = "<ul class=\"nav\">
 $page = isset($_GET["p"]) ? $_GET["p"] : "home";
 switch($page)
 {
+default:
 case "home":
   $pageContent = generateHomePage();
   break;
@@ -61,6 +62,10 @@ case "patrons":
   
 case "books":
   $pageContent = generateBooksPage();
+  break;
+
+case "newloan":
+  $pageContent = generateNewLoanPage();
   break;
 }
 
