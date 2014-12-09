@@ -253,7 +253,8 @@ function generatePatronsPage()
     "SELECT
       Patron.patronName as Name,
       Patron.patronNo as ID,
-      Patron.patronType as Type
+      Patron.patronType as Type,
+      (SELECT COUNT(*) FROM Loan WHERE Loan.patronNo = Patron.patronNo) AS Loans
     FROM Patron
     ORDER BY
       Patron.patronName ASC");
