@@ -438,4 +438,239 @@ function generateBooksPage()
   return $content;
 }
 
+
+
+function generateNewLoanPage()
+{
+  global $rootURL;
+  
+  // Content string
+  $content = "";
+  global $rootURL;
+  
+  // Content string
+  $content = "";
+  $bookcopy = 0;
+  
+  // Attempt to connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    $content .= "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
+    
+    return $content;
+  }
+  
+  // Handle submissions
+  if (isset($_POST['bookcopy']))
+  {
+    // First, make sure everything's there
+    if (!isset($_POST['bookcopy'])
+      || !isset($_POST['patron'])
+      || !isset($_POST['checkoutDate'])
+      || !isset($_POST['dueDate']))
+    {
+      $content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h1>
+  <p>Something was weird about your submission. Please try again.</p>
+</h1>";
+    }
+    else
+    {
+      // Import form values
+      $bookcopy = (int) $_POST['bookcopy'];
+      $patron = (int) $_POST['patron'];
+      $checkoutDate = $_POST['checkoutDate'];
+      $dueDate = $_POST['dueDate'];
+
+      $query = $pdo -> prepare(
+      "SELECT
+        (SELECT COUNT(*) FROM Loan WHERE patronNo = :patronNo) AS patronLoans,
+        (SELECT EXISTS(SELECT NULL FROM Loan WHERE copyNo = :copyNo)) AS loaned,
+        (SELECT EXISTS(SELECT NULL FROM CopyBook WHERE copyNo = :copyNo)) AS copyExists,
+        (SELECT EXISTS(SELECT NULL FROM Patron WHERE patronNo = :patronNo)) AS patronExists");
+      $query -> bindParam(':patronNo', $patron, PDO::PARAM_INT);
+      $query -> bindParam(':copyNo', $bookcopy, PDO::PARAM_INT);
+      $query -> execute();
+      $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+      $result = $query -> fetchAll();
+      
+      $fail = false;
+      
+      // Make sure patron exists
+      if (!$fail && $result[0]['patronExists'] == 0)
+      {
+        $fail = true;
+        $content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h2>
+  <p>That book copy doesn't exist. What're you trying to pull?</p>
+</h1>";
+      }
+      
+      // Make sure book exists
+      if (!$fail && $result[0]['copyExists'] == 0)
+      {
+        $fail = true;
+        $content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h2>
+  <p>That book copy doesn't exist. What're you trying to pull?</p>
+</h1>";
+      }
+      
+      // Lastly, make sure the book isn't already loaned
+      if (!$fail && $result[0]['loaned'] == 1)
+      {
+        $fail = true;
+        $content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h2>
+  <p>It appears that this book has already been loaned out.</p>
+</h1>";
+      }
+      
+      // Make sure patron doesn't have 3 books checked out already
+      if (!$fail && $result[0]['patronLoans'] >= 3)
+      {
+        $fail = true;
+        $content .= "<div class=\"warning\">
+  <h1>Form Submission Failed</h2>
+  <p>That patron already has at least 3 books checked out.</p>
+</h1>";
+      }
+      
+      // Attempt to insert the entry
+      if (!$fail)
+      {
+        $query = $pdo -> prepare(
+        "INSERT INTO Loan
+          (copyNo, patronNo, checkoutDate, dueDate)
+        VALUES
+          (:copyNo, :patronNo, :checkoutDate, :dueDate)");
+        
+        // Bind params and execute query
+        $query -> bindParam(':copyNo', $bookcopy, PDO::PARAM_INT);
+        $query -> bindParam(':patronNo', $patron, PDO::PARAM_INT);
+        $query -> bindParam(':checkoutDate', $checkoutDate, PDO::PARAM_STR);
+        $query -> bindParam(':dueDate', $dueDate, PDO::PARAM_STR);
+        $result = $query -> execute();
+        
+        // Check if it worked
+        if (!$result)
+        {
+          $content .= "<div class=\"warning\">
+  <h1>Insertion failed!</h2>
+  <p>Something went wrong. Please try again.</p>
+</h1>";
+        }
+        else
+        {
+          ob_start();
+?>
+<div class="no-results">New loan created!</div>
+<a href="<?php echo $rootURL; ?>?p=books">
+  <button>Return to Books</button>
+</a>
+<?php
+          $content .= ob_get_clean();
+          
+          // Return home!
+          $pdo = NULL;
+          return $content;
+        }
+      }
+    }
+  }
+  
+  // Get the copy of the book we're lending out
+  if (isset($_GET['copy']))
+  {
+    $bookcopy = (int) $_GET['copy'];
+  }
+  else
+  {
+    $content .= "<div class=\"warning\">
+  <h1>No book copy selected</h1>
+  <p>Please select a book copy from the <a href=\"$rootURL?p=books\">Books page</a>.</p>
+</div>";
+    
+    // Clean up and return
+    $pdo = NULL;
+    return $content;
+  }
+  
+  // Execute select query
+  $query = $pdo -> prepare(
+  "SELECT
+    Book.bookNo AS Book,
+    CopyBook.copyNo AS Copy,
+    Book.title AS Title,
+    Author.authorName AS Author,
+    Book.noPages AS Pages,
+    Library.libName AS Library
+  FROM CopyBook
+  LEFT JOIN
+    Book ON (Book.bookNo = CopyBook.bookNo)
+  LEFT JOIN
+    Author ON (Author.authorNo = Book.authorNo)
+  LEFT JOIN
+    Library ON (Library.libNo = CopyBook.libNo)
+  WHERE
+    CopyBook.copyNo = :bookcopy");
+  $query -> bindParam(':bookcopy', $bookcopy, PDO::PARAM_INT);
+  $query -> execute();
+  $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+  $result = $query -> fetchAll();
+  
+  ob_start();
+?>
+
+<h1>New Loan</h1>
+<h2>Book to be loaned</h2>
+
+<?php
+  $content .= ob_get_clean();
+  
+  $content .= resultToTable($result);
+  
+  // Get patrons from database too
+  $query = $pdo -> prepare("SELECT * FROM Patron ORDER BY patronName");
+  $query -> execute();
+  $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+  $result = $query -> fetchAll();
+  
+  // Build loan information form
+  ob_start();
+?>
+
+<h2>Loan Information</h2>
+
+<form action="<?php echo $rootURL; ?>?p=newloan&copy=<?php echo $bookcopy; ?>" method="post">
+  <label>Patron
+    <select name="patron">
+      <option value="0" disabled selected>Select Patron</option>
+<?php foreach ($result as $row) { ?>
+      <option value="<?php echo $row['patronNo']; ?>"><?php echo $row['patronName']; ?></option>
+<?php } ?>
+    </select>
+  </label>
+  <label>Checkout Date
+    <input type="text" name="checkoutDate" placeholder="YYYY-MM-DD" />
+  </label>
+  <label>Due Date
+    <input type="text" name="dueDate" placeholder="YYYY-MM-DD" />
+  </label>
+  <input type="hidden" name="bookcopy" value="<?php echo $bookcopy; ?>" />
+  <input type="submit" value="Submit" />
+</form>
+
+<?php
+  $content .= ob_get_clean();
+  
+  // Clean up and go home
+  $dbo = NULL;
+  return $content;
+}
+
 ?>
