@@ -92,39 +92,50 @@ function resultToTable($result)
 
 
 
+/**
+ * Generates content for the Home page
+ */
 function generateHomePage()
 {
   global $rootURL;
   
   // Content string
-  $content = "";
+  $content = "<h1>Home</h1>\n";
   
   // Uses 3rd party class Parsedown to parse the project README file
   require_once "Parsedown.php";
   $Parsedown = new Parsedown();
-  $content .= $Parsedown->text(file_get_contents("README.md"));
+  
+  $content .= "<div class=\"readme\">\n"
+    .$Parsedown->text(file_get_contents("README.md"))
+    ."</div>\n";
   
   return $content;
 }
 
 
 
+/**
+ * Generates content for the Loans page
+ */
 function generateLoansPage()
 {
   global $rootURL;
   
   // Content string
-  $content = "";
+  $content = "<h1>Loans</h1>\n";
   $patron = 0;
   
   // Attempt to connect to database
   $pdo = databaseConnect();
   if ($pdo == NULL)
   {
-    return "<div class=\"warning\">
+    $content .= "<div class=\"warning\">
   <h1>Database error</h1>
   <p>Failed to connect to database.</p>
 </div>";
+
+    return $content;
   }
   
   // Execute select query
@@ -149,7 +160,7 @@ function generateLoansPage()
 
 <form action="<?php echo $rootURL; ?>?p=loans" method="post">
   <select name="patron">
-    <option value="0"<?php echo ($patron == 0 ? " selected" : ""); ?>></option>
+    <option value="0"<?php echo ($patron == 0 ? " selected" : ""); ?> disabled>Select Patron</option>
 <?php foreach ($result as $row) { ?>
     <option value="<?php echo $row['patronNo']; ?>"<?php echo ($patron == $row['patronNo'] ? " selected" : ""); ?>><?php echo $row['patronName']; ?></option>
 <?php } ?>
@@ -211,21 +222,26 @@ function generateLoansPage()
 
 
 
+/**
+ * Generates content for the Patrons page
+ */
 function generatePatronsPage()
 {
   global $rootURL;
   
   // Content string
-  $content = "";
+  $content = "<h1>Patrons</h1>\n";
   
   //try to connect to database
   $pdo = databaseConnect();
   if ($pdo == NULL)
   {
-    return "<div class=\"warning\">
+    $content .= "<div class=\"warning\">
   <h1>Database error</h1>
   <p>Failed to connect to database.</p>
 </div>";
+    
+    return $content;
   }
 
   // Begin Query to display table of Patrons
@@ -240,15 +256,26 @@ function generatePatronsPage()
   $query -> execute();
   $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
   $result = $query -> fetchAll();
-
-  // Add results to content
-  $content .= resultToTable($result);
   
   // Add button to create new patron
   ob_start();
 ?>
 
+<a href="<?php echo $rootURL; ?>?p=addpatron">
+  <button>+ Add New Patron</button>
+</a>
 
+<?php
+  $content .= ob_get_clean();
+
+  // Add results to content
+  $content .= resultToTable($result);
+  
+  // TWICE
+  ob_start();
+?>
+
+<!-- Literally exactly the same as the one above -->
 <a href="<?php echo $rootURL; ?>?p=addpatron">
   <button>+ Add New Patron</button>
 </a>
@@ -261,21 +288,28 @@ function generatePatronsPage()
   return $content;
 }
 
+
+
+/**
+ * Generates content for the New Patron page
+ */
 function generateAddPatronPage()
 {
   global $rootURL;
   
   // Content string
-  $content = "";
+  $content = "<h1>New Patron</h1>\n";
 
   // connect to database
   $pdo = databaseConnect();
   if ($pdo == NULL)
   {
-    return "<div class=\"warning\">
+    $content .= "<div class=\"warning\">
   <h1>Database error</h1>
   <p>Failed to connect to database.</p>
 </div>";
+    
+    return $content;
   }
 
   //Test to see if user submitted a Patron
@@ -289,7 +323,10 @@ function generateAddPatronPage()
       //Display Error
       ob_start();
 ?>
-<div class="no-results">New patron was not added. Please enter a name.</div>
+<div class="warning">
+  <h1>New patron was not added</h1>
+  <p>Please enter a name.</p>
+</div>
 <?php
       $content .= ob_get_clean();
     }
@@ -332,9 +369,9 @@ function generateAddPatronPage()
 ?>
 <form action="<?php echo $rootURL; ?>?p=addpatron" method="post">
   <label for="Patrontxt">Patron Name</label>
-  <input type="text" name="Patrontxt" placeholder="Name" />
+  <input type="text" name="Patrontxt" placeholder="Name" /><br />
   <label for="Typetxt">Patron Type</label>
-  <input type="text" name="Typetxt" placeholder="Type" value="0" />
+  <input type="text" name="Typetxt" placeholder="Type" value="0" /><br />
   <input type="submit" value="Submit" />
 </form>
 <?php
@@ -347,22 +384,27 @@ function generateAddPatronPage()
 
 
 
+/**
+ * Generate content for Books page
+ */
 function generateBooksPage()
 {
   global $rootURL;
   
   // Content string
-  $content = "";
+  $content = "<h1>Books</h1>\n";
   $search = "";
   
   // Attempt to connect to database
   $pdo = databaseConnect();
   if ($pdo == NULL)
   {
-    return "<div class=\"warning\">
+    $content .= "<div class=\"warning\">
   <h1>Database error</h1>
   <p>Failed to connect to database.</p>
 </div>";
+    
+    return $content;
   }
   
   // If a search is defined, fetch Books from database
@@ -380,7 +422,7 @@ function generateBooksPage()
 ?>
 
 <form action="<?php echo $rootURL; ?>?p=books" method="post">
-  <input type="text" name="search" value="<?php echo $search; ?>" placeholder="Search" />
+  <input type="text" name="search" value="<?php echo $search; ?>" placeholder="Click here to search!" />
   <input type="submit" value="Search" />
 </form>
 
@@ -471,16 +513,15 @@ function generateBooksPage()
 
 
 
+/**
+ * Generates content for the New Loan page
+ */
 function generateNewLoanPage()
 {
   global $rootURL;
   
   // Content string
-  $content = "";
-  global $rootURL;
-  
-  // Content string
-  $content = "";
+  $content = "<h1>New Loan</h1>\n";
   $bookcopy = 0;
   
   // Attempt to connect to database
@@ -507,7 +548,7 @@ function generateNewLoanPage()
       $content .= "<div class=\"warning\">
   <h1>Form Submission Failed</h1>
   <p>Something was weird about your submission. Please try again.</p>
-</h1>";
+</div>";
     }
     else
     {
@@ -538,7 +579,7 @@ function generateNewLoanPage()
         $content .= "<div class=\"warning\">
   <h1>Form Submission Failed</h2>
   <p>That book copy doesn't exist. What're you trying to pull?</p>
-</h1>";
+</div>";
       }
       
       // Make sure book exists
@@ -548,7 +589,7 @@ function generateNewLoanPage()
         $content .= "<div class=\"warning\">
   <h1>Form Submission Failed</h2>
   <p>That book copy doesn't exist. What're you trying to pull?</p>
-</h1>";
+</div>";
       }
       
       // Lastly, make sure the book isn't already loaned
@@ -558,7 +599,7 @@ function generateNewLoanPage()
         $content .= "<div class=\"warning\">
   <h1>Form Submission Failed</h2>
   <p>It appears that this book has already been loaned out.</p>
-</h1>";
+</div>";
       }
       
       // Make sure patron doesn't have 3 books checked out already
@@ -568,7 +609,7 @@ function generateNewLoanPage()
         $content .= "<div class=\"warning\">
   <h1>Form Submission Failed</h2>
   <p>That patron already has at least 3 books checked out.</p>
-</h1>";
+</div>";
       }
       
       // Attempt to insert the entry
@@ -593,7 +634,7 @@ function generateNewLoanPage()
           $content .= "<div class=\"warning\">
   <h1>Insertion failed!</h2>
   <p>Something went wrong. Please try again.</p>
-</h1>";
+</div>";
         }
         else
         {
@@ -657,7 +698,6 @@ function generateNewLoanPage()
   ob_start();
 ?>
 
-<h1>New Loan</h1>
 <h2>Book to be loaned</h2>
 
 <?php
@@ -678,20 +718,17 @@ function generateNewLoanPage()
 <h2>Loan Information</h2>
 
 <form action="<?php echo $rootURL; ?>?p=newloan&copy=<?php echo $bookcopy; ?>" method="post">
-  <label>Patron
-    <select name="patron">
-      <option value="0" disabled selected>Select Patron</option>
+  <label for="patron">Patron</label>
+  <select name="patron">
+    <option value="0" disabled selected>Select Patron</option>
 <?php foreach ($result as $row) { ?>
-      <option value="<?php echo $row['patronNo']; ?>"><?php echo $row['patronName']; ?></option>
+    <option value="<?php echo $row['patronNo']; ?>"><?php echo $row['patronName']; ?></option>
 <?php } ?>
-    </select>
-  </label>
-  <label>Checkout Date
-    <input type="text" name="checkoutDate" placeholder="YYYY-MM-DD" />
-  </label>
-  <label>Due Date
-    <input type="text" name="dueDate" placeholder="YYYY-MM-DD" />
-  </label>
+  </select><br />
+  <label for="checkoutDate">Checkout Date</label>
+  <input type="text" name="checkoutDate" placeholder="YYYY-MM-DD" /><br />
+  <label for="dueDate">Due Date</label>
+  <input type="text" name="dueDate" placeholder="YYYY-MM-DD" /><br />
   <input type="hidden" name="bookcopy" value="<?php echo $bookcopy; ?>" />
   <input type="submit" value="Submit" />
 </form>

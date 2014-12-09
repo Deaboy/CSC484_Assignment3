@@ -37,11 +37,12 @@ header, article, footer {
 .content {
   padding: 8px;
   min-height: 20em;
+  color: #222;
 }
 
 .footer {
   margin: 0;
-  padding: 2px;
+  padding: 8px;
   min-height: 1em;
 
   background-color: #DDDDDD;
@@ -118,8 +119,78 @@ header, article, footer {
   font-size: 1.5em;
 }
 
+.content h3 {
+  display: inline-block;
+  margin-bottom: 0.2em;
+  font-weight: normal;
+  font-size: 1.2em;
+  border-bottom: 1px dotted black;
+}
+
 .content p {
   margin-top: 0;
+  line-height: 1.4em;
+}
+
+.content p a {
+  text-decoration: underline;
+  color: black;
+}
+.content p a:hover {
+  color: #999;
+}
+
+.content .readme {
+  display: block;
+  margin: 1em;
+  padding: 1em;
+  border: 1px solid #CCC;
+  border-radius: 6px;
+  background-color: #F0F0F0;
+  font-size: 0.95em;
+}
+
+.content .warning {
+  border-left: 4px solid red;
+  margin: 1em 0;
+  padding: 8px 16px;
+  background-color: rgba(255, 0, 0, 0.15);
+}
+.content .warning h1 {
+  font-size: 1.5em;
+}
+.content .warning h1,
+.content .warning p {
+  margin: 2px 0px;
+}
+
+.content form {
+  display: block;
+  margin: 0.5em;
+  padding: 1em;
+  border: 1px solid #CCC;
+  border-radius: 6px;
+  background-color: #F0F0F0;
+}
+.content form label {
+  display: inline-block;
+  width: 10em;
+  font-size: 0.8em;
+  text-align: right;
+  margin-bottom: 2em;
+}
+.content form input[type="text"],
+.content form input[type="submit"],
+.content form select {
+  padding: 0.25em;
+  font-size: 1em;
+}
+.content form input[type="text"] {
+  width: 20em;
+  background-color: #FFF;
+  border: 1px solid #CCC;
+  border-radius: 4px;
+  font-weight: lighter;
 }
 
 
@@ -193,7 +264,7 @@ table.results tr:nth-of-type(odd) td {
 
 .footer .nav > li:after {
   content: " |";
-  margin: 0 4px;
+  margin: 0 8px;
 }
 .footer .nav > li:last-of-type:after {
   content: "";

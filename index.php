@@ -7,8 +7,13 @@
  * Johnathan Ackerman, Daniel Andrus, Andrew Koc
  *
  * Description:
- * This web app provides a convenient interface for working with a library
- * database.
+ * A class project to create a web interface for manipulating a simple library
+ * database. Users are able to view patrons currently in the database, view
+ * and search through all book in the database, and view books loaned out by
+ * specific patrons. In addition, users can add new patrons and loan out copies
+ * of books to individual patrons.
+ *
+ * See README.md for more information, including usage and third-party software.
  */
 
 // Enable error reporting if not already enabled
