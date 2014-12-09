@@ -67,6 +67,10 @@ case "books":
 case "newloan":
   $pageContent = generateNewLoanPage();
   break;
+
+case "addpatron":
+  $pageContent = generateAddPatronPage();
+  break;
 }
 
 // Display everything formatted nicely in the template

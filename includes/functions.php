@@ -218,6 +218,130 @@ function generatePatronsPage()
   // Content string
   $content = "";
   
+  //try to connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    return "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
+  }
+
+  // Begin Query to display table of Patrons
+  $query = $pdo -> prepare(
+    "SELECT
+      Patron.patronName as Name,
+      Patron.patronNo as ID,
+      Patron.patronType as Type
+    FROM Patron
+    ORDER BY
+      Patron.patronName ASC");
+  $query -> execute();
+  $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+  $result = $query -> fetchAll();
+
+  // Add results to content
+  $content .= resultToTable($result);
+  
+  // Add button to create new patron
+  ob_start();
+?>
+
+
+<a href="<?php echo $rootURL; ?>?p=addpatron">
+  <button>+ Add New Patron</button>
+</a>
+
+<?php
+  $content .= ob_get_clean();
+  
+  // Clean up
+  $pdo = NULL;
+  return $content;
+}
+
+function generateAddPatronPage()
+{
+  global $rootURL;
+  
+  // Content string
+  $content = "";
+
+  // connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    return "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
+  }
+
+  //Test to see if user submitted a Patron
+  if (isset($_POST["Patrontxt"]) and isset($_POST["Typetxt"]))
+  {
+    //build query
+    $PatronName = $_POST["Patrontxt"];
+    $PatronType = (int) $_POST["Typetxt"];
+    if ($PatronName == "")
+    {
+      //Display Error
+      ob_start();
+?>
+<div class="no-results">New patron was not added. Please enter a name.</div>
+<?php
+      $content .= ob_get_clean();
+    }
+    else
+    {
+      //build Insert command
+      $query = $pdo -> prepare(
+        "INSERT INTO Patron ( patronName, patronType ) VALUES
+          (:patronName, :patronType)");
+      $query -> bindParam(':patronName', $PatronName, PDO::PARAM_STR, 128);
+      $query -> bindParam(':patronType', $PatronType, PDO::PARAM_INT);
+      $result = $query -> execute();
+
+      //check if command successful
+      if (!$result)
+      {
+        //if it was not display error
+        ob_start();
+?>
+<div class="no-results">New patron was not added!</div>
+<?php
+        $content .= ob_get_clean();
+      }
+      else
+      {
+        //if it was display confirmation
+        ob_start();
+?>
+<div class="no-results">New patron &quot;<?php echo $PatronName; ?>&quot; was added.</div>
+<?php
+        $content .= ob_get_clean();
+      }
+      
+    }
+  }
+  
+  
+  //build form with two labels, two textboxes, and a submit button
+  ob_start();
+?>
+<form action="<?php echo $rootURL; ?>?p=addpatron" method="post">
+  <label for="Patrontxt">Patron Name</label>
+  <input type="text" name="Patrontxt" placeholder="Name" />
+  <label for="Typetxt">Patron Type</label>
+  <input type="text" name="Typetxt" placeholder="Type" value="0" />
+  <input type="submit" value="Submit" />
+</form>
+<?php
+  $content .= ob_get_clean();
+
+  // Clean up and go home!
+  $pdo = NULL;
   return $content;
 }
 
@@ -229,9 +353,92 @@ function generateBooksPage()
   
   // Content string
   $content = "";
+  $search = "";
   
+  // Attempt to connect to database
+  $pdo = databaseConnect();
+  if ($pdo == NULL)
+  {
+    return "<div class=\"warning\">
+  <h1>Database error</h1>
+  <p>Failed to connect to database.</p>
+</div>";
+  }
+  
+  // If a search is defined, fetch Books from database
+  if (isset($_POST["search"]))
+  {
+    $search = $_POST["search"];
+  }
+  else
+  {
+    $search = "";
+  }
+
+  // Build Book search form
+  ob_start();
+?>
+
+<form action="<?php echo $rootURL; ?>?p=books" method="post">
+  <input type="text" name="search" value="<?php echo $search; ?>" placeholder="Book Title" />
+  <button type="submit" value="submit">Search</button>
+</form>
+
+<?php
+  $content .= ob_get_clean();
+
+  if ( $search != "" )
+  {
+    // Execute select query
+    $query = $pdo -> prepare(
+      "SELECT
+        Book.bookNo AS Book,
+        CopyBook.copyNo AS Copy,
+        Book.title AS Title,
+        Author.authorName AS Author,
+        Library.libName AS Library,
+        (CASE WHEN
+            EXISTS (SELECT NULL FROM Loan 
+            WHERE Loan.copyNo = CopyBook.copyNo)
+          THEN 'No' ELSE 'Yes' END) AS Available
+      FROM Book
+      INNER JOIN
+        CopyBook ON (CopyBook.bookNo = Book.bookNo)
+      LEFT JOIN
+        Author ON (Author.authorNo  =  Book.authorNo)
+      LEFT JOIN
+        Library ON (Library.libNo  =  CopyBook.libNo)
+      WHERE
+        Book.title LIKE CONCAT('%', :search, '%')
+      ORDER BY
+        Author.authorName ASC,
+        Book.title ASC,
+        Library.libName ASC");
+    $query -> bindParam(":search", $search, PDO::PARAM_STR);
+    $query -> execute();
+    $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+    $result = $query -> fetchAll(); 
+    // Add results to content
+    $content .= resultToTable($result);
+  }
+  else
+  {
+    // If no query was made, just display prompt
+    ob_start();
+?>
+<div class="no-results">
+  Search by book title in the text box above.
+</div>
+<?php
+    $content .= ob_get_clean();
+  }
+  
+  // Clean up after ourselves!
+  $pdo = NULL;
   return $content;
 }
+
+
 
 function generateNewLoanPage()
 {

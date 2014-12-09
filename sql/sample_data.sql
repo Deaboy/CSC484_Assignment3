@@ -43,7 +43,7 @@ INSERT INTO Book ( title, noPages, authorno ) VALUES
 	('How to Read', 732, 4 ),
 	('How to Remember', 473, 4),
 	('The Day of Light', 100, 1),
-	('Remeber Me', 3921, 2 ),
+	('Remember Me', 3921, 2 ),
 	('Vector Notation', 532, 4);
 
 # Copy of Books
