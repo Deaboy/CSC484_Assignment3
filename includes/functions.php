@@ -396,6 +396,7 @@ function generateBooksPage()
         CopyBook.copyNo AS Copy,
         Book.title AS Title,
         Author.authorName AS Author,
+        Book.noPages AS Pages,
         Library.libName AS Library,
         (CASE WHEN
             EXISTS (SELECT NULL FROM Loan 
@@ -417,7 +418,17 @@ function generateBooksPage()
     $query -> bindParam(":search", $search, PDO::PARAM_STR);
     $query -> execute();
     $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
-    $result = $query -> fetchAll(); 
+    $result = $query -> fetchAll();
+    
+    // Append buttons to lend out books (for those not already lent out)
+    for ($i = 0; $i < sizeof($result); $i++)
+    {
+      $result[$i]['Action'] =
+        ($result[$i]['Available'] == "Yes" ? "<a href=\"$rootURL?p=newloan&copy=".$result[$i]['Copy']."\">" : "")
+        . "<button" .($result[$i]['Available'] == "No" ? " disabled" : ""). ">Loan Out</button>"
+        . ($result[$i]['Available'] == "Yes" ? "</a>" : "");
+    }
+    
     // Add results to content
     $content .= resultToTable($result);
   }
