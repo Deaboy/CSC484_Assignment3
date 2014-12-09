@@ -67,8 +67,9 @@ CREATE TABLE IF NOT EXISTS Loan (
 	patronNo BIGINT NOT NULL,
 	checkOutDate DATE NOT NULL,
 	dueDate DATE NOT NULL,
-  
-    CHECK (dueDate > checkOutDate),
+	
+	UNIQUE INDEX (copyNo),
+	INDEX (patronNo),
 
 	CONSTRAINT fk_loan_copybook
 		FOREIGN KEY (copyNo)
