@@ -368,7 +368,7 @@ function generateBooksPage()
   // If a search is defined, fetch Books from database
   if (isset($_POST["search"]))
   {
-    $search = $_POST["search"];
+    $search = trim($_POST["search"]);
   }
   else
   {
@@ -380,8 +380,8 @@ function generateBooksPage()
 ?>
 
 <form action="<?php echo $rootURL; ?>?p=books" method="post">
-  <input type="text" name="search" value="<?php echo $search; ?>" placeholder="Book Title" />
-  <button type="submit" value="submit">Search</button>
+  <input type="text" name="search" value="<?php echo $search; ?>" placeholder="Search" />
+  <input type="submit" value="Search" />
 </form>
 
 <?php
@@ -389,7 +389,7 @@ function generateBooksPage()
 
   if ( $search != "" )
   {
-    // Execute select query
+    // Execute select query with search
     $query = $pdo -> prepare(
       "SELECT
         Book.bookNo AS Book,
@@ -416,33 +416,53 @@ function generateBooksPage()
         Book.title ASC,
         Library.libName ASC");
     $query -> bindParam(":search", $search, PDO::PARAM_STR);
-    $query -> execute();
-    $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
-    $result = $query -> fetchAll();
-    
-    // Append buttons to lend out books (for those not already lent out)
-    for ($i = 0; $i < sizeof($result); $i++)
-    {
-      $result[$i]['Action'] =
-        ($result[$i]['Available'] == "Yes" ? "<a href=\"$rootURL?p=newloan&copy=".$result[$i]['Copy']."\">" : "")
-        . "<button" .($result[$i]['Available'] == "No" ? " disabled" : ""). ">Loan Out</button>"
-        . ($result[$i]['Available'] == "Yes" ? "</a>" : "");
-    }
-    
-    // Add results to content
-    $content .= resultToTable($result);
   }
   else
   {
-    // If no query was made, just display prompt
-    ob_start();
-?>
-<div class="no-results">
-  Search by book title in the text box above.
-</div>
-<?php
-    $content .= ob_get_clean();
+    // Execute select query without search
+    $query = $pdo -> prepare(
+      "SELECT
+        Book.bookNo AS Book,
+        CopyBook.copyNo AS Copy,
+        Book.title AS Title,
+        Author.authorName AS Author,
+        Book.noPages AS Pages,
+        Library.libName AS Library,
+        (CASE WHEN
+            EXISTS (SELECT NULL FROM Loan 
+            WHERE Loan.copyNo = CopyBook.copyNo)
+          THEN 'No' ELSE 'Yes' END) AS Available
+      FROM Book
+      INNER JOIN
+        CopyBook ON (CopyBook.bookNo = Book.bookNo)
+      LEFT JOIN
+        Author ON (Author.authorNo  =  Book.authorNo)
+      LEFT JOIN
+        Library ON (Library.libNo  =  CopyBook.libNo)
+      WHERE
+        Book.title LIKE CONCAT('%', :search, '%')
+      ORDER BY
+        Author.authorName ASC,
+        Book.title ASC,
+        Library.libName ASC");
+    $query -> bindParam(":search", $search, PDO::PARAM_STR);
   }
+  
+  $query -> execute();
+  $result = $query -> setFetchMode(PDO::FETCH_ASSOC);
+  $result = $query -> fetchAll();
+
+  // Append buttons to lend out books (for those not already lent out)
+  for ($i = 0; $i < sizeof($result); $i++)
+  {
+    $result[$i]['Action'] =
+      ($result[$i]['Available'] == "Yes" ? "<a href=\"$rootURL?p=newloan&copy=".$result[$i]['Copy']."\">" : "")
+      . "<button" .($result[$i]['Available'] == "No" ? " disabled" : ""). ">Loan Out</button>"
+      . ($result[$i]['Available'] == "Yes" ? "</a>" : "");
+  }
+
+  // Add results to content
+  $content .= resultToTable($result);
   
   // Clean up after ourselves!
   $pdo = NULL;
