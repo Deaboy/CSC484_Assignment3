@@ -282,9 +282,9 @@ function generateBooksPage()
       LEFT JOIN
         Book ON (Book.bookNo = CopyBook.bookNo)
       LEFT JOIN
-        Author ON (Book.authorNo = Author.authorNo)
+        Author ON (Author.authorNo  =  Book.authorNo)
       LEFT JOIN
-        Library ON (CopyBook.libNo = Library.libNo)
+        Library ON (Library.libNo  =  CopyBook.libNo)
       WHERE
         Book.title LIKE '%' || :search || '%'
       ORDER BY
