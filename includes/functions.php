@@ -229,7 +229,7 @@ function generateBooksPage()
   
   // Content string
   $content = "";
-  $search = 0;
+  $search = "";
   
   // Attempt to connect to database
   $pdo = databaseConnect();
@@ -248,7 +248,7 @@ function generateBooksPage()
   }
   else
   {
-    $search = 0;
+    $search = "";
   }
 
   // Build Book search form
@@ -256,7 +256,7 @@ function generateBooksPage()
 ?>
 
 <form action="<?php echo $rootURL; ?>?p=books" method="post">
-  <input type="text" name="search"<?php echo ($search ? "" : " value=$search"); ?> placeholder="Book Title" />
+  <input type="text" name="search" value="<?php echo $search; ?>" placeholder="Book Title" />
   <button type="submit" value="submit">Search</button>
 </form>
 
@@ -274,19 +274,18 @@ function generateBooksPage()
         Author.authorName AS Author,
         Library.libName AS Library,
         (CASE WHEN
-            EXISTS (
-            SELECT NULL FROM Loan 
+            EXISTS (SELECT NULL FROM Loan 
             WHERE Loan.copyNo = CopyBook.copyNo)
-          THEN 'No' ELSE 'Yes') AS Available
-      FROM CopyBook
-      LEFT JOIN
-        Book ON (Book.bookNo = CopyBook.bookNo)
+          THEN 'No' ELSE 'Yes' END) AS Available
+      FROM Book
+      INNER JOIN
+        CopyBook ON (CopyBook.bookNo = Book.bookNo)
       LEFT JOIN
         Author ON (Author.authorNo  =  Book.authorNo)
       LEFT JOIN
         Library ON (Library.libNo  =  CopyBook.libNo)
       WHERE
-        Book.title LIKE '%' || :search || '%'
+        Book.title LIKE CONCAT('%', :search, '%')
       ORDER BY
         Author.authorName ASC,
         Book.title ASC,
@@ -304,7 +303,7 @@ function generateBooksPage()
     ob_start();
 ?>
 <div class="no-results">
-  Enter in a Book's Title to Start
+  Search by book title in the text box above.
 </div>
 <?php
     $content .= ob_get_clean();
