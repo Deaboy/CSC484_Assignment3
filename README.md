@@ -13,6 +13,24 @@ The GitHub repository for this project can be found
 [here](https://github.com/Deaboy/CSC484_Assignment3).
 
 ## Instructions
+### Creating Tables and Sample Data
+The database tables and sample data will have to be manually created using the
+files provided in this project. The file to create the necessary tables is
+/sql/create_tables.sql, and the file to fill these tables with sample data
+is /sql/sample_data.sql.
+
+### Database Connection Configuration
+Due to security concerns and the fact that this project is made public on
+GitHub, the connection info to the database has not been included with this
+project. To add connection info, create a file named "dbConnectionInfo.php"
+and place it in the "includes" folder. In this file, you will need to use
+PHP to set the following variables according the database's connection info.
+
+- $dbHost (The address of the database host)
+- $dbName (The name of the database)
+- $dbUser (The user to log into the database)
+- $dbPass (The password used to connect to the databse)
+
 ### View All Patrons
 To **view all patrons**, click "Patrons" in the main menu. There, you will see
 a complete list of all patrons in the database in alphabetical order.
